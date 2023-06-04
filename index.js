@@ -44,56 +44,27 @@ async function run() {
       const tasks = await taskCollection.find().toArray();
       res.json(tasks);
     });
-
+   
     app.post('/tasks', async (req, res) => {
-      try {
         const newTask = req.body;
-        console.log(newTask); // Log the received task to verify the data
-
-        // Validate the new task
-        const validationError = validateTask(newTask);
-        if (validationError) {
-          res.status(400).json({ error: validationError });
-          return;
-        }
-
         const result = await taskCollection.insertOne(newTask);
-        if (result.insertedCount === 1) {
-          res.status(201).json(newTask); // Use 201 status code for successful creation
-        } else {
-          res.status(500).json({ error: 'Failed to insert task' });
-        }
-      } catch (error) {
-        console.error('An error occurred while adding the task:', error);
-        res.status(500).json({ error: 'An error occurred while adding the task' });
-      }
+          res.send(result); 
     });
 
     app.put('/tasks/:id', async (req, res) => {
       const taskId = req.params.id;
       const updatedTask = req.body;
-
-      try {
-        const result = await taskCollection.updateOne(
+      const result = await taskCollection.updateOne(
           { _id: new ObjectId(taskId) },
           { $set: { status: updatedTask.status } }
         );
         res.json(result.modifiedCount > 0);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to update task' });
-      }
     });
 
     app.delete('/tasks/:id', async (req, res) => {
-      try {
         const taskId = req.params.id;
         const result = await taskCollection.deleteOne({ _id: new ObjectId(taskId) });
         res.json(result.deletedCount > 0);
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to delete task' });
-      }
     });
 
     // Send a ping to confirm a successful connection
